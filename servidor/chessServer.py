@@ -37,5 +37,5 @@ while not board.is_game_over():
 
 engine.quit()
 cli.close()
-print(game, file=open("/home/pi/scripts/python/ajedrez/partidas.pgn", "w"), end="\n\n")
+print(game, file=open("partidas.pgn", "w"), end="\n\n")
 print("Adiós")
