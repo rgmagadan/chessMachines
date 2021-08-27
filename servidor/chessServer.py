@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from datetime import date
 import configparser
 import socket
 import chess
@@ -40,8 +41,17 @@ cliente, addr = servidor.accept()
 engine = chess.engine.SimpleEngine.popen_uci("stockfish")
 
 for i in range(1, 5):
+    print("Jugando partida " + str(i))
     board = chess.Board()
     game = chess.pgn.Game()
+    game.headers['Date'] = date.today()
+    game.headers['Round'] = i
+    if i%2 == 1:
+        game.headers['White'] = 'Cliente'
+        game.headers['Black'] = 'Servidor'
+    else:
+        game.headers['White'] = 'Servidor'
+        game.headers['Black'] = 'Cliente'
     firstMove = True
     while not board.is_game_over():
         if firstMove:
@@ -51,8 +61,8 @@ for i in range(1, 5):
             node = node.add_variation(chess.Move.from_uci(jueganBlancas(i)))
         if not board.is_game_over():
             node = node.add_variation(chess.Move.from_uci(jueganNegras(i)))
+    game.headers['Result'] = board.result()
     print(game, file=open("partidas.pgn", "a"), end="\n\n")
-    print(board.result())
 
 engine.quit()
 cliente.close()
