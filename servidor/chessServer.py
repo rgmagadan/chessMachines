@@ -6,36 +6,54 @@ import chess
 import chess.engine
 import chess.pgn
 
+def juegaServidor():
+    result = engine.play(board, chess.engine.Limit(time=0.1))
+    board.push(result.move)
+    jugadaServidor = bytes(str(result.move), encoding="ascii")
+    cliente.send(jugadaServidor)
+    return str(result.move)
+
+def juegaCliente():
+    jugadaCliente = cliente.recv(10).decode("ascii")
+    board.push_san(jugadaCliente)
+    return jugadaCliente
+
+def jueganBlancas(i):
+    if i%2 == 1:
+        return juegaCliente()
+    else:
+        return juegaServidor()
+
+def jueganNegras(i):
+    if i%2 == 0:
+        return juegaCliente()
+    else:
+        return juegaServidor()
+
 configuración = configparser.ConfigParser()
 configuración.read("datos.cfg")
-ser = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ser.bind(("", int(configuración["conexión"]["port"])))
-ser.listen(1)
-cli, addr = ser.accept()
+servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+servidor.bind(("", int(configuración["conexión"]["port"])))
+servidor.listen(1)
+cliente, addr = servidor.accept()
 
 engine = chess.engine.SimpleEngine.popen_uci("stockfish")
-board = chess.Board()
-game = chess.pgn.Game()
-firstMove = True
 
-while not board.is_game_over():
-    jugadaCliente = cli.recv(10).decode("ascii")
-    board.push_san(jugadaCliente)
-    print("El cliente ha jugado " + jugadaCliente)
-    if firstMove:
-        node = game.add_variation(chess.Move.from_uci(jugadaCliente))
-        firstMove = False
-    else:
-        node = node.add_variation(chess.Move.from_uci(jugadaCliente))
-    if not board.is_game_over():
-        result = engine.play(board, chess.engine.Limit(time=0.1))
-        board.push(result.move)
-        jugadaServidor = bytes(str(result.move), encoding="ascii")
-        cli.send(jugadaServidor)
-        print("El servidor ha movido " + str(result.move))
-        node = node.add_variation(chess.Move.from_uci(str(result.move)))
+for i in range(1, 5):
+    board = chess.Board()
+    game = chess.pgn.Game()
+    firstMove = True
+    while not board.is_game_over():
+        if firstMove:
+            node = game.add_variation(chess.Move.from_uci(jueganBlancas(i)))
+            firstMove = False
+        else:
+            node = node.add_variation(chess.Move.from_uci(jueganBlancas(i)))
+        if not board.is_game_over():
+            node = node.add_variation(chess.Move.from_uci(jueganNegras(i)))
+    print(game, file=open("partidas.pgn", "a"), end="\n\n")
+    print(board.result())
 
 engine.quit()
-cli.close()
-print(game, file=open("partidas.pgn", "w"), end="\n\n")
-print("Adiós")
+cliente.close()
+print("FIN")
