@@ -15,13 +15,11 @@ def juegaServidor():
     recibido = obj.recv(10).decode("ascii")
     board.push_san(recibido)
 
-def juega(turno):
-    if turno%2 == 1:
+def juega():
+    if (i%2 == 1 and board.turn == chess.WHITE) or (i%2 == 0 and board.turn == chess.BLACK):
         juegaCliente()
     else:
         juegaServidor()
-    turno += 1
-    return turno
 
 configuración = configparser.ConfigParser()
 configuración.read("datos.cfg")
@@ -34,11 +32,10 @@ print("Conectado al servidor")
 
 for i in range(1, 5):
     board = chess.Board()
-    turno = i
     while not board.is_game_over():
-        turno = juega(turno)
+        juega()
         if not board.is_game_over():
-            turno = juega(turno)
+            juega()
 
 engine.quit()
 obj.close()

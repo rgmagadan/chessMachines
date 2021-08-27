@@ -52,11 +52,9 @@ for i in range(1, 5):
     else:
         game.headers['White'] = 'Servidor'
         game.headers['Black'] = 'Cliente'
-    firstMove = True
     while not board.is_game_over():
-        if firstMove:
+        if board.fen() == chess.STARTING_FEN:
             node = game.add_variation(chess.Move.from_uci(jueganBlancas(i)))
-            firstMove = False
         else:
             node = node.add_variation(chess.Move.from_uci(jueganBlancas(i)))
         if not board.is_game_over():
