@@ -31,6 +31,16 @@ def jueganNegras(i):
     else:
         return juegaServidor()
 
+def anotaMarcador():
+    if board.outcome().winner != None:
+        if game.headers['White'] == 'Cliente':
+            marcador[0] += int(board.result()[0])
+            marcador[1] += int(board.result()[-1])
+        else:
+            marcador[0] += int(board.result()[-1])
+            marcador[1] += int(board.result()[0])
+    return 'Cliente ' + str(marcador[0]) + ' - ' + 'Servidor ' + str(marcador[1])
+
 configuración = configparser.ConfigParser()
 configuración.read("datos.cfg")
 servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -39,6 +49,7 @@ servidor.listen(1)
 cliente, addr = servidor.accept()
 
 engine = chess.engine.SimpleEngine.popen_uci("stockfish")
+marcador = [0, 0]
 
 for i in range(1, 5):
     print("Jugando partida " + str(i))
@@ -60,6 +71,7 @@ for i in range(1, 5):
         if not board.is_game_over():
             node = node.add_variation(chess.Move.from_uci(jueganNegras(i)))
     game.headers['Result'] = board.result()
+    print(anotaMarcador())
     print(game, file=open("partidas.pgn", "a"), end="\n\n")
 
 engine.quit()
