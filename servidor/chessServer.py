@@ -51,7 +51,7 @@ cliente, addr = servidor.accept()
 engine = chess.engine.SimpleEngine.popen_uci("stockfish")
 marcador = [0, 0]
 
-for i in range(1, 5):
+for i in range(1, 101):
     print("Jugando partida " + str(i))
     board = chess.Board()
     game = chess.pgn.Game()
