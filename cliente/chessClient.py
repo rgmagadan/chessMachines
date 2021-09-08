@@ -30,7 +30,7 @@ obj = socket.socket()
 obj.connect((host, port))
 print("Conectado al servidor")
 
-for i in range(1, 5):
+for i in range(1, 101):
     board = chess.Board()
     while not board.is_game_over():
         juega()
